@@ -1,0 +1,40 @@
+# run as root user account 
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  AZURE_SUBSCRIPTION: 'Your-Service-Connection-Name'
+
+stages:
+  - stage: SecurityAudit
+    jobs:
+      - job: RunScripts
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.x'
+
+          - checkout: self
+
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'ps'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                Write-Host "Running Conditional Access Audit"
+                pwsh ./EntraID/ConditionalAccessAudit.ps1
+
+                Write-Host "Exporting Defender Recommendations"
+                pwsh ./AzureSecurity/DefenderRecommendationsExport.ps1
+
+                Write-Host "Running STRIDE Threat Model"
+                python ./ThreatModeling/stride_threat_model.py
+
+                Write-Host "Running Sentinel Alert Forward"
+                pwsh ./Alerting/SentinelToTeams.ps1
