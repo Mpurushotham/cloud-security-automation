@@ -23,7 +23,6 @@ cloud-security-automation/
 
 ---
 
-## 📘 README.md (Suggested Content)
 
 ```markdown
 # 🔐 Cloud Security Automation Scripts
